@@ -143,7 +143,7 @@ object SparkRunner {
   def kMeans(c: Config)(implicit spark: SparkSession): Unit =
     emma.onSpark {
       // read the input
-      val points = for (line <- DataBag.readCSV[String](c.input, c.csv)) yield {
+      val points = for (line <- DataBag.readText(c.input)) yield {
         val record = line.split("\t")
         Point(record.head.toLong, Vec(record.tail.map(_.toDouble)))
       }
@@ -158,7 +158,7 @@ object SparkRunner {
   def wordCount(c: Config)(implicit spark: SparkSession): Unit =
     emma.onSpark {
       // read the input files and split them into lowercased words
-      val docs = DataBag.readCSV[String](c.input, c.csv)
+      val docs = DataBag.readText(c.input)
       // parse and count the words
       val counts = WordCount(docs)
       // write the results into a file

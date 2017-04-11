@@ -137,7 +137,7 @@ object FlinkRunner {
   def kMeans(c: Config)(implicit flink: ExecutionEnvironment): Unit =
     emma.onFlink {
       // read the input
-      val points = for (line <- DataBag.readCSV[String](c.input, c.csv)) yield {
+      val points = for (line <- DataBag.readText(c.input)) yield {
         val record = line.split("\t")
         Point(record.head.toLong, Vec(record.tail.map(_.toDouble)))
       }
@@ -152,7 +152,7 @@ object FlinkRunner {
   def wordCount(c: Config)(implicit flink: ExecutionEnvironment): Unit =
     emma.onFlink {
       // read the input files and split them into lowercased words
-      val docs = DataBag.readCSV[String](c.input, c.csv)
+      val docs = DataBag.readText(c.input)
       // parse and count the words
       val counts = WordCount(docs)
       // write the results into a file
