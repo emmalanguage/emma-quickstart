@@ -4,6 +4,7 @@
 TEMP_DIR=$(dirname $(mktemp -u))
 CURR_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 ARCH_DIR="$CURR_DIR/target/generated-sources/archetype"
+ARCH_RSR="$ARCH_DIR/src/main/resources/archetype-resources"
 ARCH_POM="$ARCH_DIR/pom.xml"
 ARCH_MDT="$ARCH_DIR/src/main/resources/META-INF/maven/archetype-metadata.xml"
 
@@ -22,8 +23,11 @@ function create_archetype {
     # 2) fix the archetype file structure
     echo "FIXING FILES IN GENERATED ARCHETYPE"
     # copy explicitly the .gitignore file
-    cp ./.gitignore                                                                                                    \
-       "$ARCH_DIR/src/main/resources/archetype-resources/"
+    cp ./.gitignore "$ARCH_RSR"
+    # insert placeholder for root package in pom.xml files
+    for pom in $(find "$ARCH_RSR" -name 'pom.xml'); do
+        sed -i s/org.example/\${package}/g "$pom"
+    done
 
     # 5) install the archetype
     echo "COPYING ARCHETYPE TO ROOT PACKAGE"

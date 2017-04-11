@@ -8,7 +8,7 @@ import ml.model._
 import text._
 
 import breeze.linalg.{Vector => Vec}
-import org.apache.flink.api.scala.ExecutionEnvironment
+import org.apache.spark.sql.SparkSession
 import org.emmalanguage.api.Meta.Projections._
 import org.emmalanguage.api._
 import org.emmalanguage.io.csv._
@@ -16,7 +16,7 @@ import org.emmalanguage.util.Iso
 
 import scala.reflect.ClassTag
 
-object FlinkExamplesRunner {
+object SparkRunner {
 
   // ---------------------------------------------------------------------------
   // Config and helper type aliases
@@ -26,6 +26,7 @@ object FlinkExamplesRunner {
   case class Config
   (
     // general parameters
+    master      : String               = "local[*]",
     command     : Option[String]       = None,
     // union of all parameters bound by a command option or argument
     // (in alphabetic order)
@@ -48,6 +49,10 @@ object FlinkExamplesRunner {
 
     help("help")
       .text("Show this help message")
+
+    opt[String]("master")
+      .action((x, c) => c.copy(master = x))
+      .text("Spark master address")
 
     section("Graph Analytics")
     cmd("transitive-closure")
@@ -101,13 +106,13 @@ object FlinkExamplesRunner {
       res <- cmd match {
         // Graphs
         case "transitive-closure" =>
-          Some(transitiveClosure(cfg)(flinkExecEnv(cfg)))
+          Some(transitiveClosure(cfg)(sparkSession(cfg)))
         // Machine Learning
         case "k-means" =>
-          Some(kMeans(cfg)(flinkExecEnv(cfg)))
+          Some(kMeans(cfg)(sparkSession(cfg)))
         // Text
         case "word-count" =>
-          Some(wordCount(cfg)(flinkExecEnv(cfg)))
+          Some(wordCount(cfg)(sparkSession(cfg)))
         case _ =>
           None
       }
@@ -117,13 +122,14 @@ object FlinkExamplesRunner {
   // Parallelized algorithms
   // ---------------------------------------------------------------------------
 
-  implicit def breezeVectorCSVConverter[V: CSVColumn : ClassTag]: CSVConverter[Vec[V]] =
-    CSVConverter.iso[Array[V], Vec[V]](Iso.make(Vec.apply, _.toArray), implicitly)
+  implicit def breezeVectorCSVConverter[V](implicit V: CSVColumn[V], ctag: ClassTag[V])
+  : CSVConverter[Vec[V]] = CSVConverter.iso[Array[V], Vec[V]](
+    Iso.make(Vec.apply, _.toArray), implicitly)
 
   // Graphs
 
-  def transitiveClosure(c: Config)(implicit flink: ExecutionEnvironment): Unit =
-    emma.onFlink {
+  def transitiveClosure(c: Config)(implicit spark: SparkSession): Unit =
+    emma.onSpark {
       // read in set of edges to be used as input
       val edges = DataBag.readCSV[Edge[Long]](c.input, c.csv)
       // build the transitive closure
@@ -134,8 +140,8 @@ object FlinkExamplesRunner {
 
   // Machine Learning
 
-  def kMeans(c: Config)(implicit flink: ExecutionEnvironment): Unit =
-    emma.onFlink {
+  def kMeans(c: Config)(implicit spark: SparkSession): Unit =
+    emma.onSpark {
       // read the input
       val points = for (line <- DataBag.readCSV[String](c.input, c.csv)) yield {
         val record = line.split("\t")
@@ -149,8 +155,8 @@ object FlinkExamplesRunner {
 
   // Text
 
-  def wordCount(c: Config)(implicit flink: ExecutionEnvironment): Unit =
-    emma.onFlink {
+  def wordCount(c: Config)(implicit spark: SparkSession): Unit =
+    emma.onSpark {
       // read the input files and split them into lowercased words
       val docs = DataBag.readCSV[String](c.input, c.csv)
       // parse and count the words
@@ -163,8 +169,10 @@ object FlinkExamplesRunner {
   // Helper methods
   // ---------------------------------------------------------------------------
 
-  private def flinkExecEnv(c: Config): ExecutionEnvironment =
-    ExecutionEnvironment.getExecutionEnvironment
+  private def sparkSession(c: Config): SparkSession = SparkSession.builder()
+    .master(c.master)
+    .appName(s"Emma example: c.command")
+    .getOrCreate()
 
   class Parser extends scopt.OptionParser[Config]("emma-quickstart") {
 
