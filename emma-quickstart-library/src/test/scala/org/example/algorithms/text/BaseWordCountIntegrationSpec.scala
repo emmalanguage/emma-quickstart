@@ -28,7 +28,7 @@ trait BaseWordCountIntegrationSpec extends FlatSpec with Matchers with BeforeAnd
     deleteRecursive(new File(path))
   }
 
-  "WordCount" should "count words" in {
+  it should "count words" in {
     wordCount(s"$path/jabberwocky.txt", s"$path/wordcount-output.txt", CSV())
 
     val act = DataBag(fromPath(s"$path/wordcount-output.txt"))
