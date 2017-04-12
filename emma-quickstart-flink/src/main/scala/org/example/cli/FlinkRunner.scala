@@ -143,8 +143,8 @@ object FlinkRunner {
       }
       // do the clustering
       val solution = KMeans(c.k, c.epsilon, c.iterations)(points)
-      // write the result model into a file
-      solution.writeCSV(c.output, c.csv)
+      // write the (pointID, clusterID) pairs into a file
+      solution.map(s => (s.point.id, s.clusterID)).writeCSV(c.output, c.csv)
     }
 
   // Text
