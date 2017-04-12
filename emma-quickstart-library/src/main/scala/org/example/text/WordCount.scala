@@ -10,6 +10,7 @@ object WordCount {
     val words = for {
       line <- docs
       word <- DataBag[String](line.toLowerCase.split("\\W+"))
+      if word != ""
     } yield word
 
     // group the words by their identity and count the occurrence of each word
