@@ -1,11 +1,11 @@
 package org.example
 package cli
 
-import graphs._
-import graphs.model._
-import ml.clustering._
-import ml.model._
-import text._
+import algorithms.graphs._
+import algorithms.graphs.model._
+import algorithms.ml.clustering._
+import algorithms.ml.model._
+import algorithms.text._
 
 import breeze.linalg.{Vector => Vec}
 import org.apache.spark.sql.SparkSession
@@ -35,7 +35,6 @@ object SparkRunner {
     iterations  : Int                  = 0,
     input       : String               = System.getProperty("java.io.tmpdir"),
     k           : Int                  = 0,
-    lambda      : Double               = 0,
     output      : String               = System.getProperty("java.io.tmpdir")
   )
   //@formatter:on
