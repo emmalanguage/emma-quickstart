@@ -50,10 +50,10 @@ object FlinkRunner {
 
     opt[String]("codegen")
       .text("custom codegen path")
-      .action { (x, c) =>
+      .action((x, c) => {
         System.setProperty("emma.codegen.dir", x)
         c
-      }
+      })
 
     section("Graph Analytics")
     cmd("transitive-closure")

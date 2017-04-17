@@ -177,7 +177,7 @@ object SparkRunner {
 
   private def sparkSession(c: Config): SparkSession = SparkSession.builder()
     .master(c.master)
-    .appName(s"Emma example: c.command")
+    .appName(s"Emma example: ${c.command.get}")
     .getOrCreate()
 
   class Parser extends scopt.OptionParser[Config]("emma-quickstart") {
