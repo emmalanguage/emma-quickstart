@@ -7,16 +7,13 @@ import algorithms.ml.clustering._
 import algorithms.ml.model._
 import algorithms.text._
 
-import breeze.linalg.{Vector => Vec}
 import org.apache.flink.api.scala.ExecutionEnvironment
+import org.emmalanguage.FlinkAware
 import org.emmalanguage.api.Meta.Projections._
 import org.emmalanguage.api._
 import org.emmalanguage.io.csv._
-import org.emmalanguage.util.Iso
 
-import scala.reflect.ClassTag
-
-object FlinkRunner {
+object FlinkRunner extends FlinkAware {
 
   // ---------------------------------------------------------------------------
   // Config and helper type aliases
@@ -36,7 +33,7 @@ object FlinkRunner {
     D           : Int                  = 0,
     k           : Int                  = 0,
     output      : String               = System.getProperty("java.io.tmpdir")
-  )
+  ) extends FlinkConfig
   //@formatter:on
 
   // ---------------------------------------------------------------------------
@@ -113,13 +110,13 @@ object FlinkRunner {
       res <- cmd match {
         // Graphs
         case "transitive-closure" =>
-          Some(transitiveClosure(cfg)(flinkExecEnv(cfg)))
+          Some(transitiveClosure(cfg)(flinkEnv(cfg)))
         // Machine Learning
         case "k-means" =>
-          Some(kMeans(cfg)(flinkExecEnv(cfg)))
+          Some(kMeans(cfg)(flinkEnv(cfg)))
         // Text
         case "word-count" =>
-          Some(wordCount(cfg)(flinkExecEnv(cfg)))
+          Some(wordCount(cfg)(flinkEnv(cfg)))
         case _ =>
           None
       }
@@ -171,9 +168,6 @@ object FlinkRunner {
   // ---------------------------------------------------------------------------
   // Helper methods
   // ---------------------------------------------------------------------------
-
-  private def flinkExecEnv(c: Config): ExecutionEnvironment =
-    ExecutionEnvironment.getExecutionEnvironment
 
   class Parser extends scopt.OptionParser[Config]("emma-quickstart") {
 

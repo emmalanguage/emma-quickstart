@@ -12,7 +12,7 @@ import org.emmalanguage.api._
 class FlinkKMeansIntegrationSpec extends BaseKMeansIntegrationSpec with FlinkAware {
 
   override def kMeans(k: Int, epsilon: Double, iterations: Int, input: String): Set[Solution[Long]] =
-    emma.onFlink {
+    withDefaultFlinkEnv(implicit flink => emma.onFlink {
       // read the input
       val points = for (line <- DataBag.readText(input)) yield {
         val record = line.split("\t")
@@ -22,5 +22,5 @@ class FlinkKMeansIntegrationSpec extends BaseKMeansIntegrationSpec with FlinkAwa
       val result = KMeans(2, k, epsilon, iterations)(points)
       // return the solution as a local set
       result.fetch().toSet[Solution[Long]]
-    }
+    })
 }

@@ -7,16 +7,13 @@ import algorithms.ml.clustering._
 import algorithms.ml.model._
 import algorithms.text._
 
-import breeze.linalg.{Vector => Vec}
 import org.apache.spark.sql.SparkSession
+import org.emmalanguage.SparkAware
 import org.emmalanguage.api.Meta.Projections._
 import org.emmalanguage.api._
 import org.emmalanguage.io.csv._
-import org.emmalanguage.util.Iso
 
-import scala.reflect.ClassTag
-
-object SparkRunner {
+object SparkRunner extends SparkAware {
 
   // ---------------------------------------------------------------------------
   // Config and helper type aliases
@@ -26,18 +23,21 @@ object SparkRunner {
   case class Config
   (
     // general parameters
-    master      : String               = "local[*]",
-    command     : Option[String]       = None,
+    master       : String               = defaultSparkConfig.master,
+    warehouseDir : String               = defaultSparkConfig.warehouseDir,
+    command      : Option[String]       = None,
     // union of all parameters bound by a command option or argument
     // (in alphabetic order)
-    csv         : CSV                  = CSV(),
-    epsilon     : Double               = 0,
-    iterations  : Int                  = 0,
-    input       : String               = System.getProperty("java.io.tmpdir"),
-    D           : Int                  = 0,
-    k           : Int                  = 0,
-    output      : String               = System.getProperty("java.io.tmpdir")
-  )
+    csv          : CSV                  = CSV(),
+    epsilon      : Double               = 0,
+    iterations   : Int                  = 0,
+    input        : String               = sys.props("java.io.tmpdir"),
+    D            : Int                  = 0,
+    k            : Int                  = 0,
+    output       : String               = sys.props("java.io.tmpdir")
+  ) extends SparkConfig {
+    lazy val appName = s"Emma example: ${command.getOrElse("unknown")}"
+  }
   //@formatter:on
 
   // ---------------------------------------------------------------------------
@@ -176,11 +176,6 @@ object SparkRunner {
   // ---------------------------------------------------------------------------
   // Helper methods
   // ---------------------------------------------------------------------------
-
-  private def sparkSession(c: Config): SparkSession = SparkSession.builder()
-    .master(c.master)
-    .appName(s"Emma example: ${c.command.get}")
-    .getOrCreate()
 
   class Parser extends scopt.OptionParser[Config]("emma-quickstart") {
 
