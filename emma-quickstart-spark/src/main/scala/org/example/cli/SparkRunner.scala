@@ -34,6 +34,7 @@ object SparkRunner {
     epsilon     : Double               = 0,
     iterations  : Int                  = 0,
     input       : String               = System.getProperty("java.io.tmpdir"),
+    D           : Int                  = 0,
     k           : Int                  = 0,
     output      : String               = System.getProperty("java.io.tmpdir")
   )
@@ -44,7 +45,7 @@ object SparkRunner {
   // ---------------------------------------------------------------------------
 
   val parser = new Parser {
-    head("emma-quickstart", "0.2-SNAPSHOT")
+    head("emma-quickstart", "0.1-SNAPSHOT")
 
     help("help")
       .text("Show this help message")
@@ -75,9 +76,14 @@ object SparkRunner {
     cmd("k-means")
       .text("K-Means Clustering")
       .children(
+        arg[Int]("D")
+          .text("number of dimensions")
+          .action((x, c) => c.copy(D = x))
+          .validate(between("D", 0, Int.MaxValue)),
         arg[Int]("k")
           .text("number of clusters")
-          .action((x, c) => c.copy(k = x)),
+          .action((x, c) => c.copy(k = x))
+          .validate(between("k", 0, Int.MaxValue)),
         arg[Double]("epsilon")
           .text("termination threshold")
           .action((x, c) => c.copy(epsilon = x))
@@ -128,10 +134,6 @@ object SparkRunner {
   // Parallelized algorithms
   // ---------------------------------------------------------------------------
 
-  implicit def breezeVectorCSVConverter[V](implicit V: CSVColumn[V], ctag: ClassTag[V])
-  : CSVConverter[Vec[V]] = CSVConverter.iso[Array[V], Vec[V]](
-    Iso.make(Vec.apply, _.toArray), implicitly)
-
   // Graphs
 
   def transitiveClosure(c: Config)(implicit spark: SparkSession): Unit =
@@ -151,12 +153,12 @@ object SparkRunner {
       // read the input
       val points = for (line <- DataBag.readText(c.input)) yield {
         val record = line.split("\t")
-        Point(record.head.toLong, Vec(record.tail.map(_.toDouble)))
+        Point(record.head.toLong, record.tail.map(_.toDouble))
       }
       // do the clustering
-      val solution = KMeans(c.k, c.epsilon, c.iterations)(points)
+      val solution = KMeans(c.D, c.k, c.epsilon, c.iterations)(points)
       // write the (pointID, clusterID) pairs into a file
-      solution.map(s => (s.point.id, s.clusterID)).writeCSV(c.output, c.csv)
+      solution.map(s => (s.id, s.label.id)).writeCSV(c.output, c.csv)
     }
 
   // Text
