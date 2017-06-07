@@ -11,8 +11,6 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import resource._
 
-import scala.io.Source
-
 import java.io.File
 import java.io.PrintWriter
 
