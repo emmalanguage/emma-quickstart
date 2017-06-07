@@ -2,7 +2,6 @@ package org.example
 package algorithms.text
 
 import org.emmalanguage.api._
-import org.emmalanguage.io.csv.CSV
 import org.emmalanguage.test.util._
 import org.scalatest.BeforeAndAfter
 import org.scalatest.FlatSpec
@@ -44,7 +43,7 @@ trait BaseWordCountIntegrationSpec extends FlatSpec with Matchers with BeforeAnd
       } yield s"$word\t${occs.length}"
     })
 
-    act.fetch() should contain theSameElementsAs exp.fetch()
+    act.collect() should contain theSameElementsAs exp.collect()
   }
 
   def wordCount(input: String, output: String, csv: CSV): Unit

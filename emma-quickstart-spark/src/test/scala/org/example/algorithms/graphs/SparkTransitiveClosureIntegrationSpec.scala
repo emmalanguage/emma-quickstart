@@ -5,7 +5,6 @@ import model.Edge
 
 import org.emmalanguage.SparkAware
 import org.emmalanguage.api._
-import org.emmalanguage.io.csv._
 
 class SparkTransitiveClosureIntegrationSpec extends BaseTransitiveClosureIntegrationSpec with SparkAware {
 
@@ -16,6 +15,6 @@ class SparkTransitiveClosureIntegrationSpec extends BaseTransitiveClosureIntegra
       // build the transitive closure
       val paths = TransitiveClosure(edges)
       // return the closure as local set
-      paths.fetch().toSet
+      paths.collect().toSet
     })
 }

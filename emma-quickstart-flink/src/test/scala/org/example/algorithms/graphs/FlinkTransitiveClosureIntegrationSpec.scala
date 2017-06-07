@@ -5,7 +5,6 @@ import model._
 
 import org.emmalanguage.FlinkAware
 import org.emmalanguage.api._
-import org.emmalanguage.io.csv._
 
 class FlinkTransitiveClosureIntegrationSpec extends BaseTransitiveClosureIntegrationSpec with FlinkAware {
 
@@ -16,6 +15,6 @@ class FlinkTransitiveClosureIntegrationSpec extends BaseTransitiveClosureIntegra
       // build the transitive closure
       val paths = TransitiveClosure(edges)
       // return the closure as local set
-      paths.fetch().toSet
+      paths.collect().toSet
     })
 }

@@ -4,7 +4,6 @@ package algorithms.ml.clustering
 import KMeans.Solution
 import algorithms.ml.model._
 
-import breeze.linalg.{Vector => Vec}
 import org.emmalanguage.FlinkAware
 import org.emmalanguage.api.Meta.Projections._
 import org.emmalanguage.api._
@@ -21,6 +20,6 @@ class FlinkKMeansIntegrationSpec extends BaseKMeansIntegrationSpec with FlinkAwa
       // do the clustering
       val result = KMeans(2, k, epsilon, iterations)(points)
       // return the solution as a local set
-      result.fetch().toSet[Solution[Long]]
+      result.collect().toSet[Solution[Long]]
     })
 }
